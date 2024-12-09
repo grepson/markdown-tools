@@ -1,10 +1,15 @@
 #!/usr/bin/env sh
 
-# Initial build
-npx quartz build
-
 # Use the CONTENT_PATH environment variable
 : "${WORKDIR_PATH:=/app/quartz}"
+
+if [ ! "$(ls -A /app/quartz/content)" ]; then
+    echo "Container initial run. Copying initial files to empty quartz directory...."
+    cp -R ${WORKDIR_PATH}/docs/* ${WORKDIR_PATH}/content/*
+fi
+
+# Initial build
+npx quartz build
 
 # Start HTTP server in the background
 cd "${WORKDIR_PATH}/public"

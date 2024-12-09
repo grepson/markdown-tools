@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     env_file: ./perlite.env
     volumes:
-      - ./notes/perlite:/var/www/perlite/Notes:ro
+      - ./notes/perlite:/var/www/perlite/Notes
   perlite-web:
     image: nginx:stable-alpine
     container_name: ${COMPOSE_PROJECT_NAME}-perlite-web
