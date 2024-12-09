@@ -1,0 +1,21 @@
+.DS_Store
+.idea
+*.log
+tmp/
+
+
+node_modules
+**/node_modules
+
+# envs
+.env
+perlite.env
+flatnotes.env
+
+slidev
+!containers/slidev
+
+notes
+slides
+
+obsidian

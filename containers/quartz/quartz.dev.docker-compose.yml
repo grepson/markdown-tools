@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  quartz:
+    build:
+      dockerfile: quartz.Dockerfile
+    container_name: quartz_http
+    environment:
+      - WORKDIR_PATH=/app/quartz
+    volumes:
+      - ./quartz/quartz_test_md:/app/quartz/content
+      - ./quartz/public:/app/quartz/public
+    # Uncomment if using trafeik as a proxy
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.quartz.rule=Host(`quartz.home.arpa`)"
+    #   - "traefik.http.routers.quartz.entrypoints=web"
+    #   - "traefik.http.services.quartz.loadbalancer.server.port=80"
+    ports:
+      - 3000:80
+    restart: unless-stopped

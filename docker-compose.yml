@@ -1,0 +1,102 @@
+services:
+  traefik:
+    container_name: ${COMPOSE_PROJECT_NAME}-traefik
+    image: docker.io/library/traefik:3.2
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "${MD_TOOLS_PROXY_PORT}:80"
+      - "8081:8080"
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    restart: unless-stopped
+  perlite:
+    image: sec77/perlite:latest
+    container_name: ${COMPOSE_PROJECT_NAME}-perlite
+    restart: unless-stopped
+    env_file: ./perlite.env
+    volumes:
+      - ./notes/perlite:/var/www/perlite/Notes:ro
+  perlite-web:
+    image: nginx:stable-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-perlite-web
+    restart: unless-stopped
+    ports:
+      - 8765:80
+    volumes_from:
+      - perlite
+    volumes:
+      - ./containers/perlite/perlite.conf:/etc/nginx/conf.d/default.conf:ro # bind mount the necessary nginx config into container
+    depends_on:
+      - perlite
+    labels:
+     - traefik.enable=true
+     - traefik.http.routers.perlite.rule=Host(`${PERLITE_DOMAIN}`)
+     - traefik.http.routers.perlite.entrypoints=web
+     - traefik.http.services.perlite.loadbalancer.server.port=80
+     - traefik.docker.network=proxy
+    #  # Part for optional traefik middlewares
+    #  - traefik.http.routers.perlite.middlewares=basic-auth@file
+  quartz:
+    build:
+      context: ./containers/quartz
+      dockerfile: quartz.Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}-quartz
+    environment:
+      - WORKDIR_PATH=/app/quartz
+    volumes:
+      - ./notes/quartz/content:/app/quartz/content
+      - ./notes/quartz/public:/app/quartz/public
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.quartz.rule=Host(`${QUARTZ_DOMAIN}`)
+      - traefik.http.routers.quartz.entrypoints=web
+      - traefik.http.services.quartz.loadbalancer.server.port=80
+    ports:
+      - 3000:80
+    restart: unless-stopped
+  slidev:
+    build:
+      context: ./containers/slidev
+      dockerfile: slidev.Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}-slidev
+    volumes:
+      - ./slidev:/app/slidev
+      # Uncomment after first launch and default script migration if using demo!
+      - ./slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
+      - ./slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
+    ports:
+      - 3030:3030
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.slidev.rule=Host(`${SLIDEV_DOMAIN}`)
+      - traefik.http.routers.slidev.entrypoints=web
+      - traefik.http.services.slidev.loadbalancer.server.port=3030
+  flatnotes:
+    container_name: ${COMPOSE_PROJECT_NAME}-flatnotes
+    image: dullage/flatnotes:latest
+    env_file: ./flatnotes.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      FLATNOTES_PORT: 3031
+    ports:
+      - 3031:3031
+    volumes:
+      # flatnotes only works on flat structure, so the edit feature is limited.
+      - "./notes/flatnotes:/data"
+      # - "./notes/quartz:/data/quartz"
+      # - "./notes/perlite:/data/perlite"
+      # - "./slides:/data/slides"
+      # Optional. Allows you to save the search index in a different location:
+      # - "./index:/data/.flatnotes"
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.flatnotes.rule=Host(`${FLATNOTES_DOMAIN}`)
+      - traefik.http.routers.flatnotes.entrypoints=web
+      - traefik.http.services.flatnotes.loadbalancer.server.port=3031
