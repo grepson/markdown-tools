@@ -67,8 +67,8 @@ services:
     volumes:
       - ./slidev:/app/slidev
       # Uncomment after first launch and default script migration if using demo!
-      - ./slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
-      - ./slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
+      # - ./slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
+      # - ./slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
     ports:
       - 3030:3030
     labels:
