@@ -6,19 +6,19 @@ This repository consists of useful scripts and docker images / compose files ena
 
 Make sure that you have docker installed along side of docker-compose.
 
-- copy the example environment variables (example.env, perlite.example.env, flatnotes.example.env) by removing example keyword from them.
-- run the provided `docker-compose.yml` by running `docker-compose up`
-- kill docker compose after everything initalized and execute `copy_example_slidev.sh` to copy example slide to new directory enabling you to switch presentations
-- uncomment volume for presentations, that way you can switch presentations in slidev:
+* copy the example environment variables (example.env, perlite.example.env, flatnotes.example.env) by removing example keyword from them.
+* run the provided `docker-compose.yml` by running `docker-compose up`
+* kill docker compose after everything initalized and execute `copy_example_slidev.sh` to copy example slide to new directory enabling you to switch presentations
+* uncomment volume for presentations, that way you can switch presentations in slidev:
 
 ``` dockerfile
       # Uncomment after first launch and default script migration if using demo!
-      - ./slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
-      - ./slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
+      - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
+      - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages 
 ```
 
-- set `SLIDEV_SLIDE_DIR` to `demo` if not set by default to link it.
-- add all domains mentioned in `.env` file to your `/etc/hosts` if running traefik on port `80` (default scenario)
+* set `SLIDEV_SLIDE_DIR` to `demo` if not set by default to link it.
+* add all domains mentioned in `.env` file to your `/etc/hosts` if running traefik on port `80` (default scenario)
 
 default domains:
 
@@ -49,3 +49,14 @@ If you wanna switch presentation for slidev do following:
 * change environment variable inside `.env` file to point to your new slide
 * restart slidev container and enjoy new presentation by keeping structure of folders clean!
 
+## Tips
+
+If your intention is to host all of this locally and later have github repo with configuration you can use directory variables for each container to for example point it to `~/Notes` and then initialize empty git repo there to sync it.
+
+The base gitignore:
+
+``` markdown
+node_modules
+.DS_Store
+slidev/node_modules
+```

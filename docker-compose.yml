@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     env_file: ./perlite.env
     volumes:
-      - ./notes/perlite:/var/www/perlite/Notes
+      - ${PERLITE_DIR}:/var/www/perlite/Notes
   perlite-web:
     image: nginx:stable-alpine
     container_name: ${COMPOSE_PROJECT_NAME}-perlite-web
@@ -49,8 +49,8 @@ services:
     environment:
       - WORKDIR_PATH=/app/quartz
     volumes:
-      - ./notes/quartz/content:/app/quartz/content
-      - ./notes/quartz/public:/app/quartz/public
+      - ${QUARTZ_DIR}/content:/app/quartz/content
+      - ${QUARTZ_DIR}/public:/app/quartz/public
     labels:
       - traefik.enable=true
       - traefik.http.routers.quartz.rule=Host(`${QUARTZ_DOMAIN}`)
@@ -65,10 +65,10 @@ services:
       dockerfile: slidev.Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}-slidev
     volumes:
-      - ./slidev:/app/slidev
+      - ${SLIDEV_ROOT_DIR}/slidev:/app/slidev
       # Uncomment after first launch and default script migration if using demo!
-      # - ./slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
-      # - ./slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
+      # - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
+      # - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
     ports:
       - 3030:3030
     labels:
