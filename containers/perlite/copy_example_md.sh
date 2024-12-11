@@ -12,8 +12,8 @@ if [ ! -d "$PERLITE_DIR" ]; then
     mkdir -p "$PERLITE_DIR"
 fi
 
-echo "Copying initial md file...."
-mkdir -p ./tmp
-wget https://raw.githubusercontent.com/secure-77/Perlite/refs/heads/main/README.md -P ./tmp
-cp ./tmp/README.md "$PERLITE_DIR"
-rm -rf ./tmp
+echo "Copying initial md files...."
+mkdir -p $PERLITE_DIR
+cd $PERLITE_DIR
+curl -L https://github.com/secure-77/Perlite/tarball/main | tar -xz --strip-components=3 'secure-77-Perlite-*/perlite/Demo/*'
+echo "Copied demo content from git repo onto $PERLITE_DIR !"
