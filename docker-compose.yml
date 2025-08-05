@@ -67,8 +67,8 @@ services:
     volumes:
       - ${SLIDEV_ROOT_DIR}/slidev:/app/slidev
       # Uncomment after first launch and default script migration if using demo!
-      # - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
-      # - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
+      - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/slides.md:/app/slidev/slides.md
+      - ${SLIDEV_ROOT_DIR}/slides/${SLIDEV_SLIDE_DIR}/pages:/app/slidev/pages
     ports:
       - 3030:3030
     labels:
@@ -100,3 +100,25 @@ services:
       - traefik.http.routers.flatnotes.rule=Host(`${FLATNOTES_DOMAIN}`)
       - traefik.http.routers.flatnotes.entrypoints=web
       - traefik.http.services.flatnotes.loadbalancer.server.port=3031
+  pandoc-orchestrator:
+    build:
+      context: ./containers/pandoc
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}-pandoc-orchestrator
+    volumes:
+      - ${PANDOC_WATCH_DIR:-./notes}:/app/watch
+      - ${PANDOC_OUTPUT_DIR:-./output}:/app/output
+      - ${PANDOC_TEMPLATES_DIR:-./templates}:/app/templates
+      - ${PANDOC_ASSETS_DIR:-./assets}:/app/assets
+      - ${PANDOC_FILTERS_DIR:-./filters}:/app/filters
+      - ./containers/pandoc/config.json:/app/config.json
+      - /var/run/docker.sock:/var/run/docker.sock  # Access to Docker daemon
+    environment:
+      - NODE_ENV=production
+      - WATCH_DIR=/app/watch
+      - OUTPUT_DIR=/app/output
+      - TEMPLATES_DIR=/app/templates
+      - CONFIG_FILE=/app/config.json
+      - PANDOC_IMAGE=pandoc/extra:latest
+      - MAX_WORKERS=4
+    restart: unless-stopped

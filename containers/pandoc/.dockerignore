@@ -1,0 +1,15 @@
+# Ignore development artifacts
+node_modules
+dist
+.npm
+npm-debug.log
+
+# Ignore Docker and CI/CD files
+.dockerignore
+Dockerfile
+.git
+.gitignore
+
+# Ignore local configuration and secrets
+.env
+config.local.json

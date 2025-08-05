@@ -1,0 +1,38 @@
+{
+  "name": "pandoc-orchestrator",
+  "version": "2.0.0",
+  "description": "TypeScript-based Pandoc file orchestrator with Docker support",
+  "main": "dist/orchestrator.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/orchestrator.js",
+    "dev": "tsx orchestrator.ts",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "pandoc",
+    "markdown",
+    "docker",
+    "file-watcher",
+    "document-conversion"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "dockerode": "^4.0.2",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
+    "minimatch": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^3.3.23",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.19.9",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

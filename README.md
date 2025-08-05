@@ -37,6 +37,7 @@ This entire stack includes:
 * `quartz` - a fast, batteries-included static-site generator that transforms Markdown content into fully functional websites. Also binded by volume, and added hot reload, so you can use it on the fly!
 * `slidev` - Insane tool for creating presentations in .md files and not only! Slidev lives in root of the project as `slidev` catalogue. There is a functionality to switch presentations by re-mounting volume to one. As described above
 * `flatnotes` - Simple web editor for md files. Really limited in functionality, so volume mounting is up to you :)
+* `pandoc` - Insanely powerful engine to transform almost any format (MD here hehe) to any format. Comes with nodejs service for watching all catalogues and config file.
 * `traefik` - Proxy compatible with docker, that way there is no configuration files for non SSL setup, since everything is handled by labels in `docker-compose`
 
 ## How to use
@@ -60,3 +61,105 @@ node_modules
 .DS_Store
 slidev/node_modules
 ```
+
+## Pandoc - Exporting MD files to different formats
+
+In the repository I added pandoc to automatically transform all your files from any directory to any directory. The wrapper for watch and compiling the assets is written in `node.js` and it's using `worker_threads` for faster execution.
+
+#### Docker
+
+Image for pandoc is Debian based image from `node` docker image repository. It consists all packages needed for pandoc plus extras. Utilized multi platform build so that on any code change we're not downloading system packages on every `docker build`
+
+Environment variables:
+
+ * PANDOC_WATCH_DIR - Directory for files to watch. This is the path where all your notes live on your system.
+ * PANDOC_OUTPUT_DIR - Output directory for transpiled files. It respects folders structures, so it's nice to walk through outputs
+ * PANDOC_TEMPLATES_DIR - Templates directory for pandoc to find all template files like `latex`, `html` etc.
+ * PANDOC_ASSETS_DIR - Static assets directory. Handles images for all files.
+ * PANDOC_FILTERS_DIR - All filters directory. You can put LUA filters and such to use within the templates.
+
+#### Configuration
+
+Pandoc orchestrator is running based on `config.json` file located in `containers/pandoc`. The file consists all `glob` definitions and templates to use along side of additional variables that you wanna pass to executing worker.
+
+Example entry:
+
+``` json
+  "rules": [
+    {
+      "name": "Daily Logs",
+      "pattern": "*-daily-log.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "template": "eisvogel.latex",
+          "suffix": "-formatted"
+        },
+        {
+          "format": "html",
+          "template": "daily-log.html",
+          "suffix": "-web",
+          "pandocOptions": [
+            "--css", "/app/templates/daily-log.css",
+            "--toc",
+            "--toc-depth=2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Meeting Notes",
+      "pattern": "*-meeting-*.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "template": "meeting-notes.tex",
+          "pandocOptions": [
+            "--variable", "geometry:margin=0.75in",
+            "--variable", "fontsize=10pt"
+          ]
+        },
+        {
+          "format": "docx",
+          "template": "meeting-notes.docx"
+        }
+      ]
+    },
+]
+```
+
+As you can see for every type of assets you can define:
+
+  * Name of the rule
+  * Suffix of the outputs
+  * Pattern in `glob` for which assets to transform using this flow
+  * Format of the export
+  * Template to use, works with all pandoc options
+  * Additional pandoc variables piped to exec
+
+#### How to use
+
+Define your templates and config, and launch the docker container! It will automatically listen for all things and return you results:
+
+``` markdown
+markdown-pandoc-orchestrator  | ✅ Successfully generated: 05.08.2025-daily-log-formatted.pdf
+markdown-pandoc-orchestrator  | 🔍 Building pandoc args:
+markdown-pandoc-orchestrator  |    Input path: /app/watch/Daily Logs/05.08.2025-daily-log.md
+markdown-pandoc-orchestrator  |    Output path: /app/output/Daily Logs/05.08.2025-daily-log-web.html
+markdown-pandoc-orchestrator  |    Format: html
+markdown-pandoc-orchestrator  | 📋 Using template: daily-log.html
+markdown-pandoc-orchestrator  | 📋 Template absolute path: /app/templates/daily-log.html
+markdown-pandoc-orchestrator  | 📋 Template exists: true
+markdown-pandoc-orchestrator  | ⚙️  Adding output pandoc options: --css /app/templates/daily-log.css --toc --toc-depth=2
+markdown-pandoc-orchestrator  | 🎯 Final pandoc command: pandoc /app/watch/Daily Logs/05.08.2025-daily-log.md -o /app/output/Daily Logs/05.08.2025-daily-log-web.html -f markdown -t html --template /app/templates/daily-log.html --css /app/templates/daily-log.css --toc --toc-depth=2 --standalone --mathjax --highlight-style=espresso
+markdown-pandoc-orchestrator  | 🔧 Executing pandoc command: pandoc /app/watch/Daily Logs/05.08.2025-daily-log.md -o /app/output/Daily Logs/05.08.2025-daily-log-web.html -f markdown -t html --template /app/templates/daily-log.html --css /app/templates/daily-log.css --toc --toc-depth=2 --standalone --mathjax --highlight-style=espresso
+markdown-pandoc-orchestrator  | 📂 Input file: /app/watch/Daily Logs/05.08.2025-daily-log.md
+markdown-pandoc-orchestrator  | 📄 Output file: /app/output/Daily Logs/05.08.2025-daily-log-web.html
+markdown-pandoc-orchestrator  | 📋 Template: daily-log.html
+markdown-pandoc-orchestrator  | 🚀 Starting pandoc process for: 05.08.2025-daily-log-web.html
+markdown-pandoc-orchestrator  | 📊 Pandoc process finished with exit code: 0
+markdown-pandoc-orchestrator  | ✅ Generated: Daily Logs/05.08.2025-daily-log-web.html
+markdown-pandoc-orchestrator  | ✅ Successfully generated: 05.08.2025-daily-log-web.html
+```
+
+ 
