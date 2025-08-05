@@ -1,0 +1,105 @@
+{
+  "rules": [
+    {
+      "name": "Daily Logs",
+      "pattern": "*-daily-log.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "template": "eisvogel.latex",
+          "suffix": "-formatted"
+        },
+        {
+          "format": "html",
+          "template": "daily-log.html",
+          "suffix": "-web",
+          "pandocOptions": [
+            "--css", "/app/templates/daily-log.css",
+            "--toc",
+            "--toc-depth=2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Meeting Notes",
+      "pattern": "*-meeting-*.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "template": "meeting-notes.tex",
+          "pandocOptions": [
+            "--variable", "geometry:margin=0.75in",
+            "--variable", "fontsize=10pt"
+          ]
+        },
+        {
+          "format": "docx",
+          "template": "meeting-notes.docx"
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "glob": "reports/**/*.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "template": "report.latex",
+          "pandocOptions": [
+            "--variable", "documentclass=article",
+            "--variable", "geometry:margin=1in",
+            "--variable", "fontsize=12pt",
+            "--toc",
+            "--number-sections"
+          ]
+        },
+        {
+          "format": "html",
+          "template": "report.html",
+          "pandocOptions": [
+            "--toc",
+            "--toc-depth=3",
+            "--number-sections",
+            "--css", "/app/templates/report.css"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Presentations",
+      "pattern": "*-presentation.md",
+      "outputs": [
+        {
+          "format": "beamer",
+          "template": "presentation.latex",
+          "pandocOptions": [
+            "--variable", "theme=Madrid",
+            "--variable", "colortheme=beaver"
+          ]
+        },
+        {
+          "format": "revealjs",
+          "template": "presentation-reveal.html",
+          "pandocOptions": [
+            "--variable", "theme=white",
+            "--variable", "transition=slide"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "General Markdown",
+      "glob": "general/**/*.md",
+      "outputs": [
+        {
+          "format": "pdf",
+          "pandocOptions": [
+            "--variable", "geometry:margin=1in",
+            "--variable", "fontsize=11pt"
+          ]
+        }
+      ]
+    }
+  ]
+}
